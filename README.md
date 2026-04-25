@@ -52,7 +52,11 @@ O projeto cobre os seguintes tipos de agravos, todos disponíveis no SINAN:
 | **IBGE** | Dados populacionais para normalização (por 100 mil habitantes) |
 | **PNAD** | Proporções populacionais por escolaridade e raça/cor |
 
-Os arquivos `.csv` já convertidos estão organizados por tipo de agravo dentro do diretório `csvs/`.
+Os arquivos `.csv` já convertidos estão disponíveis para download no Google Drive, organizados por tipo de agravo:
+
+> **[Download dos dados — Google Drive](https://drive.google.com/drive/folders/1uSXgGZntx0mKnouR8Ui74a70G_VeKAAX?usp=sharing)**
+
+Após o download, coloque os arquivos dentro do diretório `csvs/`, mantendo a estrutura de subpastas por agravo.
 
 ---
 
@@ -157,7 +161,15 @@ git clone https://github.com/seu-usuario/IC-analise-dados-SINAN.git
 cd IC-analise-dados-SINAN
 ```
 
-### 4. Execute o script
+### 4. Baixe os dados
+
+Os CSVs não estão no repositório por conta do tamanho dos arquivos. Faça o download pelo Google Drive:
+
+> **[Download dos dados — Google Drive](https://drive.google.com/drive/folders/1uSXgGZntx0mKnouR8Ui74a70G_VeKAAX?usp=sharing)**
+
+Após o download, coloque os arquivos dentro de `csvs/`, mantendo a estrutura de subpastas (ex.: `csvs/acidente_de_trabalho/ACGRBR24.csv`).
+
+### 5. Execute o script
 
 ```bash
 python view.py
