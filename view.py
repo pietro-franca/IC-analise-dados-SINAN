@@ -116,6 +116,42 @@ POP_RACA = {
 POP_TOTAL = 203_000_000
 POP_RACA_ABS = {k: v * POP_TOTAL for k, v in POP_RACA.items()}
 
+# ── Dados demográficos de Botucatu/SP (estimativas IBGE 2022) ────────────────
+
+COD_BOTUCATU = "350750"
+POP_BOTUCATU = 144_200  # IBGE 2022
+
+# Faixas etárias inflacionadas na 18-24 pela presença da UNESP
+POP_FAIXA_ETARIA_BOTUCATU = {
+    "<18":   30_300,
+    "18–24": 17_300,
+    "25–34": 23_100,
+    "35–44": 21_600,
+    "45–54": 20_200,
+    "55–64": 15_900,
+    "65+":   15_800,
+}
+
+POP_RACA_BOTUCATU_PROP = {
+    "Branca":   0.620,
+    "Parda":    0.290,
+    "Preta":    0.070,
+    "Amarela":  0.015,
+    "Indígena": 0.005,
+}
+POP_RACA_ABS_BOTUCATU = {k: v * POP_BOTUCATU for k, v in POP_RACA_BOTUCATU_PROP.items()}
+
+# Perfil educacional ligeiramente acima da média nacional (cidade universitária)
+POP_ESCOLARIDADE_BOTUCATU = {
+    "Analfabeto":             0.03,
+    "Fundamental incompleto": 0.20,
+    "Fundamental completo":   0.07,
+    "Médio incompleto":       0.09,
+    "Médio completo":         0.35,
+    "Superior incompleto":    0.09,
+    "Superior completo":      0.17,
+}
+
 # proporções da PNAD
 POP_ESCOLARIDADE = {
     "Analfabeto": 0.07,
@@ -298,17 +334,20 @@ def plot_por_sexo(df: pd.DataFrame):
     plt.show()
 
 
-def plot_por_faixa_etaria_normalizado(df: pd.DataFrame):
+def plot_por_faixa_etaria_normalizado(df: pd.DataFrame, pop_faixa: dict = None):
+    if pop_faixa is None:
+        pop_faixa = POP_FAIXA_ETARIA
+
     contagem = df["FAIXA_ETARIA"].value_counts()
 
     contagem = contagem.rename("Casos").to_frame()
     contagem.index = contagem.index.astype(str)  # CategoricalIndex → string para reindex funcionar
 
-    contagem["Populacao"] = contagem.index.map(POP_FAIXA_ETARIA)
+    contagem["Populacao"] = contagem.index.map(pop_faixa)
     contagem = contagem.dropna()
     contagem["Taxa"] = contagem["Casos"] / contagem["Populacao"] * 100_000
 
-    ordem = list(POP_FAIXA_ETARIA.keys())
+    ordem = list(pop_faixa.keys())
     contagem = contagem.reindex(ordem).dropna().reset_index()
     contagem.columns = ["Faixa Etária", "Casos", "População", "Taxa"]
 
@@ -324,13 +363,16 @@ def plot_por_faixa_etaria_normalizado(df: pd.DataFrame):
     plt.show()
 
 
-def plot_por_raca_normalizado(df: pd.DataFrame):
+def plot_por_raca_normalizado(df: pd.DataFrame, pop_raca_abs: dict = None):
+    if pop_raca_abs is None:
+        pop_raca_abs = POP_RACA_ABS
+
     contagem = (
-        df[df["RACA_LABEL"].isin(POP_RACA_ABS.keys())]["RACA_LABEL"]
+        df[df["RACA_LABEL"].isin(pop_raca_abs.keys())]["RACA_LABEL"]
         .value_counts()
     )
 
-    taxa = (contagem / pd.Series(POP_RACA_ABS)) * 100_000
+    taxa = (contagem / pd.Series(pop_raca_abs)) * 100_000
     taxa = taxa.dropna().reset_index()
     taxa.columns = ["Raça/Cor", "Taxa"]
 
@@ -345,14 +387,18 @@ def plot_por_raca_normalizado(df: pd.DataFrame):
     plt.show()
 
 
-def plot_por_escolaridade_normalizado(df: pd.DataFrame):
+def plot_por_escolaridade_normalizado(df: pd.DataFrame, pop_escol: dict = None, pop_total_local: int = None):
+    if pop_escol is None:
+        pop_escol = POP_ESCOLARIDADE
+    if pop_total_local is None:
+        pop_total_local = 203_000_000
+
     df = df[df["ESCOL_LABEL"].isin(MAP_ESCOLARIDADE_AGREGADA.keys())].copy()
     df["ESCOL_AGR"] = df["ESCOL_LABEL"].map(MAP_ESCOLARIDADE_AGREGADA)
 
     contagem = df["ESCOL_AGR"].value_counts()
 
-    POP_TOTAL = 203_000_000
-    pop_abs = {k: v * POP_TOTAL for k, v in POP_ESCOLARIDADE.items()}
+    pop_abs = {k: v * pop_total_local for k, v in pop_escol.items()}
 
     taxa = (contagem / pd.Series(pop_abs)) * 100_000
     taxa = taxa.dropna().reset_index()
@@ -485,6 +531,48 @@ def plot_heatmap_uf_ano(df: pd.DataFrame):
 
 
 
+def plot_por_sit_trab(df: pd.DataFrame):
+    """Distribuição por situação no trabalho."""
+    contagem = (
+        df[df["SIT_LABEL"] != "Ignorado"]["SIT_LABEL"]
+        .value_counts()
+        .reset_index()
+    )
+    contagem.columns = ["Situação", "Casos"]
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    sns.barplot(data=contagem, x="Casos", y="Situação", palette="viridis", ax=ax)
+
+    ax.set_title("Distribuição por Situação no Trabalho")
+    ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{int(x):,}"))
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_heatmap_mes_ano(df: pd.DataFrame):
+    """Heatmap de casos por Mês e Ano."""
+    df2 = df.copy()
+    df2["MES"] = pd.to_datetime(df2["DT_NOTIFIC"], format="%Y%m%d", errors="coerce").dt.month
+    df2 = df2.dropna(subset=["MES", "ANO"])
+    df2["MES"] = df2["MES"].astype(int)
+
+    MESES = {
+        1: "Jan", 2: "Fev", 3: "Mar", 4: "Abr", 5: "Mai",  6: "Jun",
+        7: "Jul", 8: "Ago", 9: "Set", 10: "Out", 11: "Nov", 12: "Dez",
+    }
+
+    pivot = df2.groupby(["ANO", "MES"]).size().unstack(fill_value=0)
+    pivot.columns = [MESES.get(m, str(m)) for m in pivot.columns]
+
+    _, ax = plt.subplots(figsize=(14, 6))
+    sns.heatmap(pivot, cmap="YlOrRd", fmt=",d", linewidths=0.3, ax=ax, annot=True)
+    ax.set_title("Casos por Mês e Ano — Botucatu/SP")
+    ax.set_xlabel("Mês")
+    ax.set_ylabel("Ano")
+    plt.tight_layout()
+    plt.show()
+
+
 def resumo(df: pd.DataFrame):
     """Imprime estatísticas descritivas gerais no terminal."""
     total = len(df)
@@ -516,7 +604,7 @@ def resumo(df: pd.DataFrame):
 
 MENU = {
     "1": ("Série temporal (casos por ano)",        plot_serie_temporal),
-    "2": ("Casos por UF",                 plot_por_uf_normalizado),
+    "2": ("Casos por UF",                          plot_por_uf_normalizado),
     "3": ("Casos por sexo e ano (empilhado)",      plot_por_sexo),
     "4": ("Casos por faixa etária",                plot_por_faixa_etaria_normalizado),
     "5": ("Casos por raça/cor",                    plot_por_raca_normalizado),
@@ -528,15 +616,25 @@ MENU = {
     "r": ("Resumo estatístico no terminal",        resumo),
 }
 
+MENU_BOTUCATU = {
+    "1": ("Série temporal (casos por ano)",        plot_serie_temporal),
+    "2": ("Distribuição por situação no trabalho", plot_por_sit_trab),
+    "3": ("Casos por sexo e ano (empilhado)",      plot_por_sexo),
+    "4": ("Casos por faixa etária",                lambda df: plot_por_faixa_etaria_normalizado(df, POP_FAIXA_ETARIA_BOTUCATU)),
+    "5": ("Casos por raça/cor",                    lambda df: plot_por_raca_normalizado(df, POP_RACA_ABS_BOTUCATU)),
+    "6": ("Casos por escolaridade",                lambda df: plot_por_escolaridade_normalizado(df, POP_ESCOLARIDADE_BOTUCATU, POP_BOTUCATU)),
+    "7": ("Desfecho dos casos (gráfico de pizza)", plot_evolucao),
+    "8": ("Tipo de acidente por ano",              plot_tipo_acidente),
+    "9": ("Top 20 CIDs de lesão",                  plot_top_cid_lesao),
+    "h": ("Heatmap Mês × Ano",                     plot_heatmap_mes_ano),
+    "r": ("Resumo estatístico no terminal",        resumo),
+}
 
-def main():
-    print("\nCarregando dados do SINAN — Acidente de Trabalho...")
-    df = carregar_dados()
-    print(f"  {len(df):,} registros carregados de {df['ANO'].min()}–{df['ANO'].max()}.")
 
+def _rodar_menu(df: pd.DataFrame, menu: dict, titulo: str):
     while True:
-        print("\n──────── MENU ────────────────────────────────")
-        for chave, (descricao, _) in MENU.items():
+        print(f"\n──────── {titulo} ────────────────────────────────")
+        for chave, (descricao, _) in menu.items():
             print(f"  [{chave}] {descricao}")
         print("  [q] Sair")
         print("──────────────────────────────────────────────")
@@ -544,11 +642,47 @@ def main():
 
         if opcao == "q":
             break
-        elif opcao in MENU:
-            _, func = MENU[opcao]
+        elif opcao in menu:
+            _, func = menu[opcao]
             func(df)
         else:
             print("Opção inválida. Tente novamente.")
+
+
+def main_brasil():
+    print("\nCarregando dados do SINAN — Acidente de Trabalho (Brasil)...")
+    df = carregar_dados()
+    print(f"  {len(df):,} registros carregados de {df['ANO'].min()}–{df['ANO'].max()}.")
+    _rodar_menu(df, MENU, "MENU — BRASIL")
+
+
+def main_botucatu():
+    print("\nCarregando dados do SINAN — Acidente de Trabalho (Botucatu/SP)...")
+    df = carregar_dados()
+    df = df[df["ID_MUNICIP"] == COD_BOTUCATU]
+
+    if df.empty:
+        print(f"Nenhum registro encontrado para Botucatu (cód. {COD_BOTUCATU}).")
+        return
+
+    print(f"  {len(df):,} registros de Botucatu ({df['ANO'].min()}–{df['ANO'].max()}).")
+    _rodar_menu(df, MENU_BOTUCATU, "MENU — BOTUCATU/SP")
+
+
+def main():
+    print("\n══════════════════════════════════════════════")
+    print("  SINAN — Análise de Acidentes de Trabalho")
+    print("══════════════════════════════════════════════")
+    print("  [1] Brasil (todos os municípios)")
+    print("  [2] Botucatu/SP")
+    print("  [q] Sair")
+    print("══════════════════════════════════════════════")
+    escolha = input("Escopo: ").strip().lower()
+
+    if escolha == "1":
+        main_brasil()
+    elif escolha == "2":
+        main_botucatu()
 
 
 if __name__ == "__main__":
