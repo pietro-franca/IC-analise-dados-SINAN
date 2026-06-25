@@ -1,0 +1,12 @@
+================================================================================
+        SEXO_LABEL RACA_LABEL TIPO_LABEL            LOCAL_LABEL                 SIT_LABEL               EVOL_LABEL FAIXA_ETARIA               ESCOL_AGR  Tamanho  % Total
+CLUSTER                                                                                                                                                                  
+0        Masculino      Parda     Típico   No trabalho habitual  Autônomo / conta própria  Incapacidade Temporária        35–44  Fundamental incompleto   344366     12.1
+1        Masculino     Branca     Típico   No trabalho habitual      Empregado registrado  Incapacidade Temporária        25–34          Médio completo  1197788     42.2
+2        Masculino     Branca    Trajeto      Em outro trabalho      Empregado registrado  Incapacidade Temporária        25–34          Médio completo   456296     16.1
+3         Feminino     Branca     Típico   No trabalho habitual      Empregado registrado                     Cura        35–44          Médio completo   501111     17.6                                   
+4        Masculino      Parda     Típico  A caminho do trabalho              Desempregado  Incapacidade Temporária        35–44  Fundamental incompleto     9274      0.3                                   
+5        Masculino      Parda     Típico   No trabalho habitual  Empregado não registrado  Incapacidade Temporária        25–34          Médio completo   287507     10.1                                   
+6        Masculino    Amarela     Típico   No trabalho habitual      Empregado registrado  Incapacidade Temporária        25–34          Médio completo    22238      0.8                                   
+7        Masculino      Parda     Típico   No trabalho habitual        Trabalhador avulso  Incapacidade Temporária        25–34          Médio completo    21606      0.8                                   
+================================================================================

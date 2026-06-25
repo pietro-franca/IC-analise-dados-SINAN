@@ -1,0 +1,10 @@
+================================================================================
+        SEXO_LABEL RACA_LABEL TIPO_LABEL              LOCAL_LABEL                 SIT_LABEL               EVOL_LABEL FAIXA_ETARIA               ESCOL_AGR  Tamanho  % Total
+CLUSTER                                                                                                                                                                    
+0        Masculino     Branca    Trajeto        Em outro trabalho      Empregado registrado  Incapacidade Temporária        25–34          Médio completo   464049     16.3
+1         Feminino     Branca     Típico     No trabalho habitual      Empregado registrado                     Cura        35–44          Médio completo   520734     18.3                                 
+2        Masculino      Parda     Típico        Em outro trabalho             Cooperativado  Incapacidade Temporária        25–34          Médio completo    15902      0.6                                 
+3        Masculino     Branca     Típico  Em local de treinamento  Autônomo / conta própria                     Cura        35–44  Fundamental incompleto   109876      3.9                                 
+4        Masculino     Branca     Típico     No trabalho habitual      Empregado registrado  Incapacidade Temporária        25–34          Médio completo  1145347     40.3                                 
+5        Masculino      Parda     Típico     No trabalho habitual  Empregado não registrado  Incapacidade Temporária        35–44          Médio completo   584278     20.6                                 
+================================================================================
